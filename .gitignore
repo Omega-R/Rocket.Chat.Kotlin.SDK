@@ -36,3 +36,4 @@ build/
 bin/
 
 .last_commit_hash
+*.DS_Store
