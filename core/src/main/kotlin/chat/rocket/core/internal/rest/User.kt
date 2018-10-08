@@ -281,7 +281,7 @@ internal fun RocketChatClient.combineRemoved(rooms: List<Removed>?, subscription
     return removed
 }
 
-internal suspend fun RocketChatClient.listSubscriptions(timestamp: Long = 0): RestMultiResult<List<Subscription>, List<Removed>> {
+suspend fun RocketChatClient.listSubscriptions(timestamp: Long = 0): RestMultiResult<List<Subscription>, List<Removed>> {
     val urlBuilder = requestUrl(restUrl, "subscriptions.get")
     val date = CalendarISO8601Converter().fromTimestamp(timestamp)
     urlBuilder.addQueryParameter("updatedSince", date)
@@ -307,7 +307,7 @@ internal suspend fun RocketChatClient.listSubscriptions(timestamp: Long = 0): Re
     return RestMultiResult.create(subs, response.remove)
 }
 
-internal suspend fun RocketChatClient.listRooms(timestamp: Long = 0): RestMultiResult<List<Room>, List<Removed>> {
+suspend fun RocketChatClient.listRooms(timestamp: Long = 0): RestMultiResult<List<Room>, List<Removed>> {
     val urlBuilder = requestUrl(restUrl, "rooms.get")
     val date = CalendarISO8601Converter().fromTimestamp(timestamp)
     urlBuilder.addQueryParameter("updatedSince", date)
@@ -317,5 +317,42 @@ internal suspend fun RocketChatClient.listRooms(timestamp: Long = 0): RestMultiR
     val type = Types.newParameterizedType(RestMultiResult::class.java,
             Types.newParameterizedType(List::class.java, Room::class.java),
             Types.newParameterizedType(List::class.java, Removed::class.java))
+    return handleRestCall(request, type)
+}
+
+suspend fun RocketChatClient.listChannels(joinedOnly: Boolean = true, offset: Long = 0, count: Long = 0, sort: Int = 1): List<Room> {
+
+    val urlBuilder = requestUrl(restUrl, if (joinedOnly)  "channels.list.joined" else "channels.list")
+            .addQueryParameter("offset", offset.toString())
+            .addQueryParameter("count", count.toString())
+            .addQueryParameter("sort", sort.toString())
+
+    val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
+    val type = Types.newParameterizedType(List::class.java, Room::class.java)
+    return handleRestCall(request, type)
+}
+
+suspend fun RocketChatClient.listGroups(offset: Long = 0, count: Long = 0, sort: Int = 1): List<Room> {
+
+    val urlBuilder = requestUrl(restUrl, "groups.listAll")
+            .addQueryParameter("offset", offset.toString())
+            .addQueryParameter("count", count.toString())
+            .addQueryParameter("sort", sort.toString())
+
+    val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
+    val type = Types.newParameterizedType(List::class.java, Room::class.java)
+    return handleRestCall(request, type)
+}
+
+
+suspend fun RocketChatClient.listIms(offset: Long = 0, count: Long = 0, sort: Int = 1): List<Room> {
+
+    val urlBuilder = requestUrl(restUrl, "im.list")
+            .addQueryParameter("offset", offset.toString())
+            .addQueryParameter("count", count.toString())
+            .addQueryParameter("sort", sort.toString())
+
+    val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
+    val type = Types.newParameterizedType(List::class.java, Room::class.java)
     return handleRestCall(request, type)
 }
