@@ -4,17 +4,8 @@ import chat.rocket.common.model.BaseResult
 import chat.rocket.common.model.RoomType
 import chat.rocket.common.model.User
 import chat.rocket.core.RocketChatClient
-import chat.rocket.core.internal.model.ChatRoomAnnouncementPayload
-import chat.rocket.core.internal.model.ChatRoomDescriptionPayload
-import chat.rocket.core.internal.model.ChatRoomJoinCodePayload
-import chat.rocket.core.internal.model.ChatRoomNamePayload
-import chat.rocket.core.internal.model.ChatRoomPayload
-import chat.rocket.core.internal.model.ChatRoomReadOnlyPayload
-import chat.rocket.core.internal.model.ChatRoomTopicPayload
-import chat.rocket.core.internal.model.ChatRoomTypePayload
-import chat.rocket.core.internal.model.ChatRoomFavoritePayload
 import chat.rocket.core.internal.RestResult
-import chat.rocket.core.internal.model.RoomIdPayload
+import chat.rocket.core.internal.model.*
 import chat.rocket.core.model.ChatRoomRole
 import chat.rocket.core.model.Message
 import chat.rocket.core.model.Room
@@ -593,4 +584,27 @@ suspend fun RocketChatClient.chatRoomRoles(
         Types.newParameterizedType(List::class.java, ChatRoomRole::class.java)
     )
     return@withContext handleRestCall<RestResult<List<ChatRoomRole>>>(request, type).result()
+}
+
+/**
+ * Sets the notifications settings of specific channel.
+ *
+ * @param roomId roomId The ID of the room.
+ * @param disable Disable notifications for given room.
+ *
+ * @return List of [ChatRoomRole] objects.
+ */
+suspend fun RocketChatClient.saveNotification(roomId: String, disable: Boolean) = withContext(CommonPool) {
+    val notificationsPayload = NotificationsPayload(disable)
+    val payload = SaveNotificationPayload(roomId, notificationsPayload)
+
+    val adapter = moshi.adapter(SaveNotificationPayload::class.java)
+
+    val payloadBody = adapter.toJson(payload)
+    val body = RequestBody.create(RocketChatClient.CONTENT_TYPE_JSON, payloadBody)
+
+    val httpUrl = requestUrl(restUrl, "rooms.saveNotification").build()
+    val request = requestBuilderForAuthenticatedMethods(httpUrl).post(body).build()
+
+    handleRestCall<BaseResult>(request, BaseResult::class.java)
 }

@@ -9,13 +9,7 @@ import chat.rocket.common.util.CalendarISO8601Converter
 import chat.rocket.common.util.Logger
 import chat.rocket.common.util.PlatformLogger
 import chat.rocket.common.util.ifNull
-import chat.rocket.core.internal.RestResult
-import chat.rocket.core.internal.RestMultiResult
-import chat.rocket.core.internal.SettingsAdapter
-import chat.rocket.core.internal.AttachmentAdapterFactory
-import chat.rocket.core.internal.RoomListAdapterFactory
-import chat.rocket.core.internal.CoreJsonAdapterFactory
-import chat.rocket.core.internal.ReactionsAdapter
+import chat.rocket.core.internal.*
 import chat.rocket.core.internal.model.Subscription
 import chat.rocket.core.internal.realtime.socket.Socket
 import chat.rocket.core.internal.realtime.socket.model.State
@@ -46,6 +40,7 @@ class RocketChatClient private constructor(
         .add(AttachmentAdapterFactory(logger))
         .add(RoomListAdapterFactory(logger))
         .add(MetaJsonAdapter.ADAPTER_FACTORY)
+        .add(ForceStringAdapter())
         .add(java.lang.Long::class.java, ISO8601Date::class.java, TimestampAdapter(CalendarISO8601Converter()))
         .add(Long::class.java, ISO8601Date::class.java, TimestampAdapter(CalendarISO8601Converter()))
         // XXX - MAKE SURE TO KEEP CommonJsonAdapterFactory and CoreJsonAdapterFactory as the latest Adapters...
