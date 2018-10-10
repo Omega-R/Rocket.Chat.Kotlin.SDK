@@ -14,10 +14,10 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 dependencies {
     compile project (':common')
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutine}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions.coroutine}"
 
-    compile "se.ansman.kotshi:api:${versions.kotshi}"
+    implementation "se.ansman.kotshi:api:${versions.kotshi}"
     kapt "se.ansman.kotshi:compiler:${versions.kotshi}"
 
     compileOnly 'org.json:json:20090211'
