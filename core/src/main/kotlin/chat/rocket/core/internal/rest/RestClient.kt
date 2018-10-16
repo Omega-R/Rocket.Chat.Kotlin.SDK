@@ -80,6 +80,24 @@ internal fun <T> RocketChatClient.handleResponse(response: Response, type: Type)
     }
 }
 
+internal fun RocketChatClient.handleResponse(response: Response): String {
+    val url = response.priorResponse()?.request()?.url() ?: response.request().url()
+    try {
+
+        val source = response.body()?.string()
+        checkNotNull(source) { "Missing body" }
+
+        return source ?: throw RocketChatInvalidResponseException("Error parsing source", url = url.toString())
+    } catch (ex: Exception) {
+        when (ex) {
+            is RocketChatException -> throw ex // already a RocketChatException, just rethrow it.
+            else -> throw RocketChatInvalidResponseException(ex.message!!, ex, url.toString())
+        }
+    } finally {
+        response.body()?.close()
+    }
+}
+
 internal suspend fun RocketChatClient.handleRequest(
     request: Request,
     largeFile: Boolean = false,
@@ -130,6 +148,16 @@ internal suspend fun <T> RocketChatClient.handleRestCall(
     val response = handleRequest(request, largeFile, allowRedirects)
     return handleResponse(response, type)
 }
+
+internal suspend fun RocketChatClient.handleRestCall(
+        request: Request,
+        largeFile: Boolean = false,
+        allowRedirects: Boolean = true
+): String {
+    val response = handleRequest(request, largeFile, allowRedirects)
+    return handleResponse(response)
+}
+
 
 internal fun RocketChatClient.ensureClient(largeFile: Boolean, allowRedirects: Boolean): OkHttpClient {
     return if (largeFile || !allowRedirects) {

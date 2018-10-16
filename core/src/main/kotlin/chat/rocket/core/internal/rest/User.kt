@@ -189,6 +189,24 @@ suspend fun RocketChatClient.setAvatar(avatarUrl: String): Boolean {
 }
 
 /**
+ * get the user's avatar.
+ *
+ * @param avatarUrl Url of the avatar for the user
+ *
+ * @return True if the avatar was setted up, false otherwise.
+ */
+suspend fun RocketChatClient.getAvatar(userId: String): String {
+
+    val urlBuilder = requestUrl(restUrl, "users.getAvatar")
+            .addQueryParameter("userId", userId)
+
+    val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
+
+    return handleRestCall(request)
+}
+
+
+/**
  * Return the users ChatRooms (Room + Subscription)
  *
  * @param timestamp Timestamp of the last call to get only updates and removes, defaults to 0 which loads all rooms
