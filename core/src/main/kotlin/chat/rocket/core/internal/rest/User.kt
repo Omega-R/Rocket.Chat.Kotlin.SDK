@@ -42,7 +42,7 @@ suspend fun RocketChatClient.me(): Myself {
 }
 
 /**
- * Updates the profile for the user.
+ * Returns the profile for the user.
  *
  * @param userId The ID of the user to update.
  * @param email The email address for the user.
@@ -72,18 +72,30 @@ suspend fun RocketChatClient.updateProfile(
 }
 
 /**
- * Updates the profile for the user.
+ * Returns the profile for the user.
  *
  * @param userId The ID of the user to update.
- * @param email The email address for the user.
- * @param name The display name of the user.
- * @param password The password for the user.
+ * @return An [User] with an updated profile.
+ */
+suspend fun RocketChatClient.getProfileByUserId(userId: String): User {
+    val urlBuilder = requestUrl(restUrl, "users.info")
+            .addQueryParameter("userId", userId)
+
+    val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
+
+    val type = Types.newParameterizedType(RestResult::class.java, User::class.java)
+    return handleRestCall<RestResult<User>>(request, type).result()
+}
+
+/**
+ * Updates the profile for the user.
+ *
  * @param username The username for the user.
  * @return An [User] with an updated profile.
  */
-suspend fun RocketChatClient.getProfile(userId: String): User {
+suspend fun RocketChatClient.getProfileByUsername(username: String): User {
     val urlBuilder = requestUrl(restUrl, "users.info")
-            .addQueryParameter("userId", userId)
+            .addQueryParameter("username", username)
 
     val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
 
