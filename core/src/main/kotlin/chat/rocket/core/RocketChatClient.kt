@@ -26,7 +26,7 @@ import okhttp3.OkHttpClient
 import java.security.InvalidParameterException
 
 class RocketChatClient private constructor(
-    internal val httpClient: OkHttpClient,
+    val httpClient: OkHttpClient,
     baseUrl: String,
     userAgent: String,
     internal val tokenRepository: TokenRepository,

@@ -50,7 +50,7 @@ internal fun RocketChatClient.requestBuilder(httpUrl: HttpUrl): Request.Builder 
         .header("User-Agent", agent)
         .tag(Any())
 
-internal fun RocketChatClient.requestBuilderForAuthenticatedMethods(httpUrl: HttpUrl): Request.Builder {
+fun RocketChatClient.requestBuilderForAuthenticatedMethods(httpUrl: HttpUrl): Request.Builder {
     val builder = requestBuilder(httpUrl)
 
     tokenRepository.get(this.url)?.let {
