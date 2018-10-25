@@ -317,6 +317,16 @@ suspend fun RocketChatClient.messages(
     return@withContext PagedResult<List<Message>>(result.result(), result.total() ?: 0, result.offset() ?: 0)
 }
 
+suspend fun RocketChatClient.getMessage(messageId: String): Message {
+    val httpUrl = requestUrl(restUrl, "chat.getMessage")
+            .addQueryParameter("msgId", messageId)
+            .build()
+
+    val type = Types.newParameterizedType(RestResult::class.java, Message::class.java)
+    val request = requestBuilderForAuthenticatedMethods(httpUrl).get().build()
+    return handleRestCall(request, type)
+}
+
 suspend fun RocketChatClient.history(
     roomId: String,
     roomType: RoomType,

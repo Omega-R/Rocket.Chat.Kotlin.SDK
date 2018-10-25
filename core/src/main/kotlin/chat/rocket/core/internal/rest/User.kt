@@ -13,11 +13,7 @@ import chat.rocket.core.internal.model.UserPayload
 import chat.rocket.core.internal.model.UserPayloadData
 import chat.rocket.core.internal.model.OwnBasicInformationPayload
 import chat.rocket.core.internal.model.OwnBasicInformationPayloadData
-import chat.rocket.core.model.ChatRoom
-import chat.rocket.core.model.Myself
-import chat.rocket.core.model.Removed
-import chat.rocket.core.model.UserRole
-import chat.rocket.core.model.Room
+import chat.rocket.core.model.*
 import com.squareup.moshi.Types
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
@@ -69,6 +65,26 @@ suspend fun RocketChatClient.updateProfile(
 
     val type = Types.newParameterizedType(RestResult::class.java, User::class.java)
     return handleRestCall<RestResult<User>>(request, type).result()
+}
+
+suspend fun RocketChatClient.users(
+        offset: Long,
+        count: Long
+): PagedResult<List<User>> {
+    val httpUrl = requestUrl(restUrl, "users.list")
+            .addQueryParameter("offset", offset.toString())
+            .addQueryParameter("count", count.toString())
+            .build()
+
+    val request = requestBuilderForAuthenticatedMethods(httpUrl).get().build()
+
+    val type = Types.newParameterizedType(
+            RestResult::class.java,
+            Types.newParameterizedType(List::class.java, User::class.java)
+    )
+    val result = handleRestCall<RestResult<List<User>>>(request, type)
+
+    return PagedResult<List<User>>(result.result(), result.total() ?: 0, result.offset() ?: 0)
 }
 
 /**
