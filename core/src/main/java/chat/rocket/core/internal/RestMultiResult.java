@@ -5,15 +5,12 @@ import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.JsonWriter;
 import com.squareup.moshi.Moshi;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 public class RestMultiResult<T1, T2> {
     private T1 update;
@@ -55,9 +52,8 @@ public class RestMultiResult<T1, T2> {
             this.t2Adaptper = adapter2(moshi, types[1]);
         }
 
-        @Nullable
         @Override
-        public RestMultiResult<T1, T2> fromJson(@NotNull JsonReader reader) throws IOException {
+        public RestMultiResult<T1, T2> fromJson(JsonReader reader) throws IOException {
             reader.beginObject();
             T1 update = null;
             T2 remove = null;
@@ -82,7 +78,7 @@ public class RestMultiResult<T1, T2> {
         }
 
         @Override
-        public void toJson(@NotNull JsonWriter writer, @Nullable RestMultiResult<T1, T2> value)
+        public void toJson(JsonWriter writer, RestMultiResult<T1, T2> value)
                 throws IOException {
 
         }
@@ -97,11 +93,10 @@ public class RestMultiResult<T1, T2> {
     }
 
     public static class JsonAdapterFactory implements JsonAdapter.Factory {
-        @Nullable
         @Override
-        public JsonAdapter<?> create(@NotNull Type type,
-                                     @NotNull Set<? extends Annotation> annotations,
-                                     @NotNull Moshi moshi) {
+        public JsonAdapter<?> create(Type type,
+                                     Set<? extends Annotation> annotations,
+                                     Moshi moshi) {
             if (!annotations.isEmpty()) return null;
             if (type instanceof ParameterizedType) {
                 Type rawType = ((ParameterizedType) type).getRawType();

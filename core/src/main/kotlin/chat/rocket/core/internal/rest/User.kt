@@ -8,16 +8,12 @@ import chat.rocket.common.util.CalendarISO8601Converter
 import chat.rocket.core.RocketChatClient
 import chat.rocket.core.internal.RestMultiResult
 import chat.rocket.core.internal.RestResult
-import chat.rocket.core.internal.model.Subscription
-import chat.rocket.core.internal.model.UserPayload
-import chat.rocket.core.internal.model.UserPayloadData
-import chat.rocket.core.internal.model.OwnBasicInformationPayload
-import chat.rocket.core.internal.model.OwnBasicInformationPayloadData
+import chat.rocket.core.internal.model.*
 import chat.rocket.core.model.*
 import com.squareup.moshi.Types
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -48,11 +44,11 @@ suspend fun RocketChatClient.me(): Myself {
  * @return An [User] with an updated profile.
  */
 suspend fun RocketChatClient.updateProfile(
-    userId: String,
-    email: String? = null,
-    name: String? = null,
-    password: String? = null,
-    username: String? = null
+        userId: String,
+        email: String? = null,
+        name: String? = null,
+        password: String? = null,
+        username: String? = null
 ): User {
     val payload = UserPayload(userId, UserPayloadData(name, password, username, email), null)
     val adapter = moshi.adapter(UserPayload::class.java)
@@ -130,14 +126,14 @@ suspend fun RocketChatClient.getProfileByUsername(username: String): User {
  * @return An [User] with an updated profile.
  */
 suspend fun RocketChatClient.updateOwnBasicInformation(
-    email: String? = null,
-    currentPassword: String? = null,
-    newPassword: String? = null,
-    username: String? = null,
-    name: String? = null
+        email: String? = null,
+        currentPassword: String? = null,
+        newPassword: String? = null,
+        username: String? = null,
+        name: String? = null
 ): User {
     val payload =
-        OwnBasicInformationPayload(OwnBasicInformationPayloadData(email, currentPassword, newPassword, username, name))
+            OwnBasicInformationPayload(OwnBasicInformationPayloadData(email, currentPassword, newPassword, username, name))
     val adapter = moshi.adapter(OwnBasicInformationPayload::class.java)
 
     val payloadBody = adapter.toJson(payload)
@@ -186,7 +182,7 @@ suspend fun RocketChatClient.setAvatar(fileName: String, mimeType: String, input
     val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("image", fileName,
-                InputStreamRequestBody(MediaType.parse(mimeType), inputStreamProvider)
+                    InputStreamRequestBody(MediaType.parse(mimeType), inputStreamProvider)
             )
             .build()
 
@@ -262,16 +258,16 @@ suspend fun RocketChatClient.getSubscription(roomId: String): Subscription {
  *
  * @return UserRole object specifying current user roles.
  */
-suspend fun RocketChatClient.roles(): UserRole = withContext(CommonPool) {
+suspend fun RocketChatClient.roles(): UserRole = withContext(Dispatchers.Default) {
     val httpUrl = requestUrl(restUrl, "user.roles").build()
     val request = requestBuilderForAuthenticatedMethods(httpUrl).get().build()
     return@withContext handleRestCall<UserRole>(request, UserRole::class.java)
 }
 
 internal fun RocketChatClient.combine(
-    rooms: RestMultiResult<List<Room>, List<Removed>>,
-    subscriptions: RestMultiResult<List<Subscription>, List<Removed>>,
-    filterCustom: Boolean
+        rooms: RestMultiResult<List<Room>, List<Removed>>,
+        subscriptions: RestMultiResult<List<Subscription>, List<Removed>>,
+        filterCustom: Boolean
 ): RestMultiResult<List<ChatRoom>, List<Removed>> {
     val update = combine(rooms.update, subscriptions.update, filterCustom)
     val remove = combineRemoved(rooms.remove, subscriptions.remove, filterCustom)
@@ -366,39 +362,46 @@ suspend fun RocketChatClient.listRooms(timestamp: Long = 0): RestMultiResult<Lis
     return handleRestCall(request, type)
 }
 
-suspend fun RocketChatClient.listChannels(joinedOnly: Boolean = true, offset: Long = 0, count: Long = 0, sort: Int = 1): List<Room> {
+suspend fun RocketChatClient.listChannels(joinedOnly: Boolean = true, offset: Long = 0, count: Long = 0): List<Room> {
 
-    val urlBuilder = requestUrl(restUrl, if (joinedOnly)  "channels.list.joined" else "channels.list")
+    val urlBuilder = requestUrl(restUrl, if (joinedOnly) "channels.list.joined" else "channels.list")
             .addQueryParameter("offset", offset.toString())
             .addQueryParameter("count", count.toString())
-            .addQueryParameter("sort", sort.toString())
 
     val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
-    val type = Types.newParameterizedType(List::class.java, Room::class.java)
-    return handleRestCall(request, type)
+    val type = Types.newParameterizedType(
+            RestResult::class.java,
+            Types.newParameterizedType(List::class.java, Room::class.java))
+
+    return handleRestCall<RestResult<List<Room>>>(request, type).result()
 }
 
-suspend fun RocketChatClient.listGroups(offset: Long = 0, count: Long = 0, sort: Int = 1): List<Room> {
+suspend fun RocketChatClient.listGroups(offset: Long = 0, count: Long = 0): List<Room> {
 
     val urlBuilder = requestUrl(restUrl, "groups.listAll")
             .addQueryParameter("offset", offset.toString())
             .addQueryParameter("count", count.toString())
-            .addQueryParameter("sort", sort.toString())
 
     val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
-    val type = Types.newParameterizedType(List::class.java, Room::class.java)
-    return handleRestCall(request, type)
+    val type = Types.newParameterizedType(
+            RestResult::class.java,
+            Types.newParameterizedType(List::class.java, Room::class.java))
+
+    return handleRestCall<RestResult<List<Room>>>(request, type).result()
 }
 
 
-suspend fun RocketChatClient.listIms(offset: Long = 0, count: Long = 0, sort: Int = 1): List<Room> {
+suspend fun RocketChatClient.listIms(offset: Long = 0, count: Long = 0): List<Room> {
 
     val urlBuilder = requestUrl(restUrl, "im.list")
             .addQueryParameter("offset", offset.toString())
             .addQueryParameter("count", count.toString())
-            .addQueryParameter("sort", sort.toString())
 
     val request = requestBuilderForAuthenticatedMethods(urlBuilder.build()).get().build()
-    val type = Types.newParameterizedType(List::class.java, Room::class.java)
-    return handleRestCall(request, type)
+
+    val type = Types.newParameterizedType(
+            RestResult::class.java,
+            Types.newParameterizedType(List::class.java, Room::class.java))
+
+    return handleRestCall<RestResult<List<Room>>>(request, type).result()
 }

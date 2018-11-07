@@ -19,11 +19,14 @@ import chat.rocket.core.model.Myself
 import chat.rocket.core.model.Room
 import chat.rocket.core.model.url.MetaJsonAdapter
 import com.squareup.moshi.Moshi
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import okhttp3.HttpUrl
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
+import sun.net.www.protocol.http.HttpURLConnection.userAgent
 import java.security.InvalidParameterException
+import kotlin.coroutines.CoroutineContext
 
 class RocketChatClient private constructor(
     val httpClient: OkHttpClient,
@@ -31,7 +34,8 @@ class RocketChatClient private constructor(
     userAgent: String,
     internal val tokenRepository: TokenRepository,
     internal val logger: Logger
-) {
+): CoroutineScope {
+
     internal val moshi: Moshi = Moshi.Builder()
         .add(FallbackSealedClassJsonAdapter.ADAPTER_FACTORY)
         .add(RestResult.JsonAdapterFactory())
@@ -59,6 +63,9 @@ class RocketChatClient private constructor(
     val activeUsersChannel = Channel<User>(Channel.UNLIMITED)
     val typingStatusChannel = Channel<Pair<String, Boolean>>(Channel.UNLIMITED)
     internal val socket: Socket
+
+    override val coroutineContext: CoroutineContext
+        get() = socket.coroutineContext
 
     init {
         url = sanitizeUrl(baseUrl)

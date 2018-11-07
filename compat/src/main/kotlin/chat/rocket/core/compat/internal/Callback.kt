@@ -3,13 +3,13 @@ package chat.rocket.core.compat.internal
 import chat.rocket.common.RocketChatException
 import chat.rocket.core.compat.Call
 import chat.rocket.core.compat.Callback
-import kotlinx.coroutines.experimental.AbstractCoroutine
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.DefaultDispatcher
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.newCoroutineContext
-import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.coroutines.experimental.startCoroutine
+import kotlinx.coroutines.AbstractCoroutine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DefaultDispatcher
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.newCoroutineContext
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.startCoroutine
 
 @JvmOverloads
 fun <T> callback(

@@ -15,42 +15,36 @@ import chat.rocket.core.model.Message
 import chat.rocket.core.model.Myself
 import chat.rocket.core.model.Room
 import com.squareup.moshi.JsonAdapter
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.isActive
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlinx.coroutines.experimental.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.experimental.coroutineContext
+import kotlin.coroutines.CoroutineContext
 
 const val PING_INTERVAL = 15L
 
 class Socket(
-    internal val client: RocketChatClient,
-    internal val roomsChannel: SendChannel<StreamMessage<Room>>,
-    internal val subscriptionsChannel: SendChannel<StreamMessage<Subscription>>,
-    internal val messagesChannel: SendChannel<Message>,
-    internal val userDataChannel: SendChannel<Myself>,
-    internal val activeUsersChannel: SendChannel<User>,
-    internal val typingStatusChannel: SendChannel<Pair<String, Boolean>>
-) : WebSocketListener() {
+        internal val client: RocketChatClient,
+        internal val roomsChannel: SendChannel<StreamMessage<Room>>,
+        internal val subscriptionsChannel: SendChannel<StreamMessage<Subscription>>,
+        internal val messagesChannel: SendChannel<Message>,
+        internal val userDataChannel: SendChannel<Myself>,
+        internal val activeUsersChannel: SendChannel<User>,
+        internal val typingStatusChannel: SendChannel<Pair<String, Boolean>>
+) : WebSocketListener(), CoroutineScope {
 
     private val request: Request = Request.Builder()
-        .url("${client.url}/websocket")
-        .addHeader("Accept-Encoding", "gzip, deflate, sdch")
-        .addHeader("Accept-Language", "en-US,en;q=0.8")
-        .addHeader("Pragma", "no-cache")
-        .header("User-Agent", client.agent)
-        .build()
+            .url("${client.url}/websocket")
+            .addHeader("Accept-Encoding", "gzip, deflate, sdch")
+            .addHeader("Accept-Language", "en-US,en;q=0.8")
+            .addHeader("Pragma", "no-cache")
+            .header("User-Agent", client.agent)
+            .build()
 
     private val httpClient = client.httpClient
     internal val logger = client.logger
@@ -75,6 +69,10 @@ class Socket(
 
     private var messagesReceived = 0
     private var messagesProcessed = 0
+
+    override val coroutineContext: CoroutineContext
+        get() = connectionContext + parentJob!!
+
 
     init {
         setState(State.Created())
@@ -124,7 +122,7 @@ class Socket(
 
         if (reconnectionStrategy.shouldRetry) {
             reconnectJob?.cancel()
-            reconnectJob = launch(connectionContext) {
+            reconnectJob = launch {
                 logger.debug {
                     "Reconnecting in: ${reconnectionStrategy.reconnectInterval}"
                 }
@@ -276,9 +274,9 @@ class Socket(
         timeoutJob?.cancel()
 
         pingJob?.cancel()
-        pingJob = launch(parent = parentJob) {
+        pingJob = launch {
             logger.debug { "Scheduling ping" }
-            delay(PING_INTERVAL, TimeUnit.SECONDS)
+            delay(PING_INTERVAL * 1000)
 
             logger.debug { "running ping if active" }
             if (!isActive) return@launch
@@ -291,8 +289,8 @@ class Socket(
     private suspend fun schedulePingTimeout() {
         val timeout = (PING_INTERVAL * 1.5).toLong()
         logger.debug { "Scheduling ping timeout in $timeout" }
-        timeoutJob = launch(parent = parentJob) {
-            delay(timeout, TimeUnit.SECONDS)
+        timeoutJob = launch {
+            delay(timeout * 1000)
 
             if (!isActive) return@launch
             when (currentState) {
@@ -317,10 +315,12 @@ class Socket(
     }
 
     private fun sendState(state: State) {
-        launch(connectionContext) {
-            for (channel in statusChannelList) {
-                logger.debug { "Sending $state to $channel" }
-                channel.send(state)
+        if (parentJob != null) {
+            launch {
+                for (channel in statusChannelList) {
+                    logger.debug { "Sending $state to $channel" }
+                    channel.send(state)
+                }
             }
         }
     }
@@ -335,7 +335,7 @@ class Socket(
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response?) {
-        readJob = launch(parent = parentJob) {
+        readJob = launch {
             for (message in processingChannel!!) {
                 processIncomingMessage(message)
             }
@@ -365,7 +365,7 @@ class Socket(
             if (parentJob == null || !parentJob!!.isActive) {
                 logger.debug { "Parent job: $parentJob" }
             }
-            launch(parent = parentJob) {
+            launch {
                 if (processingChannel == null || processingChannel?.isFull == true || processingChannel?.isClosedForSend == true) {
                     logger.debug { "processing channel is in trouble... $processingChannel - full ${processingChannel?.isFull} - closedForSend ${processingChannel?.isClosedForSend}" }
                 }

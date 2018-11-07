@@ -5,7 +5,6 @@ import com.squareup.moshi.JsonReader;
 import com.squareup.moshi.JsonWriter;
 import com.squareup.moshi.Moshi;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -13,45 +12,48 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 
 public class RestResult<T> {
     private T _result;
-    @Nullable private Long total = null;
-    @Nullable private Long offset = null;
-    @Nullable private Long count = null;
+    
+    private Long total = null;
+    
+    private Long offset = null;
+    
+    private Long count = null;
 
-    private RestResult(T data, @Nullable Long total, @Nullable Long offset, @Nullable Long count) {
+    private RestResult(T data,  Long total,  Long offset,  Long count) {
         this._result = data;
         this.total = total;
         this.offset = offset;
         this.count = count;
     }
 
-    public T result(){
-        return _result;
-    }
-
-    @Nullable
-    public Long total() {
-        return total;
-    }
-
-    @Nullable
-    public Long offset() {
-        return offset;
-    }
-    @Nullable
-    public Long count() {
-        return count;
-    }
-
     static <T> RestResult<T> create(T data, Long total, Long offset, Long count) {
         return new RestResult<>(data, total, offset, count);
     }
 
+    public T result() {
+        return _result;
+    }
+
+    
+    public Long total() {
+        return total;
+    }
+
+    
+    public Long offset() {
+        return offset;
+    }
+
+    
+    public Long count() {
+        return count;
+    }
+
     public static class MoshiJsonAdapter<T> extends JsonAdapter<RestResult<T>> {
-        private static final String[] NAMES = new String[] {"status", "success", "total",
+        private static final String[] NAMES = new String[]{"status", "success", "total",
                 "offset", "count"};
         private static final JsonReader.Options OPTIONS = JsonReader.Options.of(NAMES);
         private final JsonAdapter<T> tAdaptper;
@@ -60,9 +62,9 @@ public class RestResult<T> {
             this.tAdaptper = adapter(moshi, types[0]);
         }
 
-        @Nullable
+        
         @Override
-        public RestResult<T> fromJson(@NotNull JsonReader reader) throws IOException {
+        public RestResult<T> fromJson( JsonReader reader) throws IOException {
             reader.beginObject();
             T result = null;
             Long total = null;
@@ -105,7 +107,7 @@ public class RestResult<T> {
         }
 
         @Override
-        public void toJson(@NotNull JsonWriter writer, @Nullable RestResult<T> value)
+        public void toJson( JsonWriter writer,  RestResult<T> value)
                 throws IOException {
 
         }
@@ -116,11 +118,11 @@ public class RestResult<T> {
     }
 
     public static class JsonAdapterFactory implements JsonAdapter.Factory {
-        @Nullable
+        
         @Override
-        public JsonAdapter<?> create(@NotNull Type type,
-                                     @NotNull Set<? extends Annotation> annotations,
-                                     @NotNull Moshi moshi) {
+        public JsonAdapter<?> create( Type type,
+                                      Set<? extends Annotation> annotations,
+                                      Moshi moshi) {
             if (!annotations.isEmpty()) return null;
             if (type instanceof ParameterizedType) {
                 Type rawType = ((ParameterizedType) type).getRawType();
