@@ -243,7 +243,7 @@ suspend fun RocketChatClient.chatRooms(timestamp: Long = 0, filterCustom: Boolea
     return combine(rooms.await(), subscriptions.await(), filterCustom)
 }
 
-suspend fun RocketChatClient.getSubscription(roomId: String): Subscription {
+suspend fun RocketChatClient.getSubscription(roomId: String): Subscription? {
     val httpUrl = requestUrl(restUrl, "subscriptions.getOne")
             .addQueryParameter("roomId", roomId)
             .build()
