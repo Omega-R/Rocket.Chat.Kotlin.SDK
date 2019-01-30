@@ -21,5 +21,6 @@ data class Room(
     val description: String?,
     val announcement: String?,
     val lastMessage: Message?,
+    @Json(name = "muted") val mutedUsers: Array<String>?,
     @JsonDefaultValueBoolean(false) val broadcast: Boolean
 ) : BaseRoom
