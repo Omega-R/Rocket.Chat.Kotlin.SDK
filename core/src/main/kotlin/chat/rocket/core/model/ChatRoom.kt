@@ -9,6 +9,7 @@ import chat.rocket.core.internal.model.Subscription
 import chat.rocket.core.internal.realtime.subscribeRoomMessages
 import chat.rocket.core.internal.rest.history
 import chat.rocket.core.internal.rest.messages
+import com.sun.xml.internal.fastinfoset.util.StringArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -39,7 +40,8 @@ data class ChatRoom(
         val groupMentions: Long?,
         val lastMessage: Message?,
         val client: RocketChatClient,
-        val broadcast: Boolean
+        val broadcast: Boolean,
+        val mutedUsers: Array<String>?
 ) : BaseRoom {
     companion object {
         fun create(room: Room, subscription: Subscription, client: RocketChatClient): ChatRoom {
@@ -68,7 +70,8 @@ data class ChatRoom(
                     groupMentions = subscription.groupMentions,
                     lastMessage = room.lastMessage,
                     client = client,
-                    broadcast = room.broadcast
+                    broadcast = room.broadcast,
+                    mutedUsers = room.mutedUsers
             )
         }
     }

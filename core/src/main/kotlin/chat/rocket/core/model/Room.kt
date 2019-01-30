@@ -17,9 +17,11 @@ data class Room(
     @Json(name = "fname") override val fullName: String?,
     @Json(name = "ro") @JsonDefaultValueBoolean(false) override val readonly: Boolean,
     @Json(name = "_updatedAt") @ISO8601Date override val updatedAt: Long?,
+
     val topic: String?,
     val description: String?,
     val announcement: String?,
     val lastMessage: Message?,
+    @Json(name = "muted") val mutedUsers: Array<String>?,
     @JsonDefaultValueBoolean(false) val broadcast: Boolean
 ) : BaseRoom
