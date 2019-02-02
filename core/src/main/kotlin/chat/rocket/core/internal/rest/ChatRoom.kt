@@ -608,3 +608,32 @@ suspend fun RocketChatClient.saveNotification(roomId: String, disable: Boolean) 
 
     handleRestCall<BaseResult>(request, BaseResult::class.java)
 }
+
+suspend fun RocketChatClient.kickUser(roomId: String, roomType: RoomType, userId: String) = withContext(Dispatchers.Default) {
+    val payload = UserIdRoomIdPayload(roomId, userId)
+
+    val adapter = moshi.adapter(UserIdRoomIdPayload::class.java)
+
+    val payloadBody = adapter.toJson(payload)
+    val body = RequestBody.create(RocketChatClient.CONTENT_TYPE_JSON, payloadBody)
+
+    val httpUrl = requestUrl(restUrl, getRestApiMethodNameByRoomType(roomType, "kick")).build()
+    val request = requestBuilderForAuthenticatedMethods(httpUrl).post(body).build()
+
+    handleRestCall<BaseResult>(request, BaseResult::class.java)
+}
+
+suspend fun RocketChatClient.closeDirectMessages(roomId: String) = withContext(Dispatchers.Default) {
+    val payload = RoomIdPayload(roomId)
+
+    val adapter = moshi.adapter(RoomIdPayload::class.java)
+
+    val payloadBody = adapter.toJson(payload)
+    val body = RequestBody.create(RocketChatClient.CONTENT_TYPE_JSON, payloadBody)
+
+    val httpUrl = requestUrl(restUrl, "im.close").build()
+    val request = requestBuilderForAuthenticatedMethods(httpUrl).post(body).build()
+
+    handleRestCall<BaseResult>(request, BaseResult::class.java)
+}
+
