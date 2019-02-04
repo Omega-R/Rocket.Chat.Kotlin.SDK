@@ -9,6 +9,7 @@ import chat.rocket.core.internal.model.Subscription
 import chat.rocket.core.internal.realtime.subscribeRoomMessages
 import chat.rocket.core.internal.rest.history
 import chat.rocket.core.internal.rest.messages
+import com.sun.xml.internal.fastinfoset.util.StringArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
