@@ -25,3 +25,32 @@ data class Room(
     @Json(name = "muted") val mutedUsers: Array<String>?,
     @JsonDefaultValueBoolean(false) val broadcast: Boolean
 ) : BaseRoom
+
+//"_id": "Lymsiu4Mn6xjTAan4RtMDEYc28fQ5aHpf4",
+//"_updatedAt": "2018-03-26T19:11:50.711Z",
+//"t": "d",
+//"msgs": 0,
+//"ts": "2018-03-26T19:11:50.711Z",
+//"meta": {
+//    "revision": 0,
+//    "created": 1522094603745,
+//    "version": 0
+//},
+//"$loki": 65,
+//"usernames": [
+//"rocket.cat",
+//"user.test"
+//]
+
+//"_id": "ByehQjC44FwMeiLbX",
+//"name": "channelname",
+//"t": "c",
+//"usernames": [
+//"example"
+//],
+//"msgs": 0,
+//"u": {
+//    "_id": "aobEdbYhXfu5hkeqG",
+//    "username": "example"
+//},
+//"ts": "2016-05-30T13:42:25.304Z"

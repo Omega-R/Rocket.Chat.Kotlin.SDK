@@ -65,4 +65,3 @@ suspend fun RocketChatClient.createDirectMessageRoom(
     return@withContext handleRestCall<RestResult<Room>>(request, type).result()
 }
 
-
